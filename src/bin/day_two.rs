@@ -24,28 +24,59 @@ fn read_input() -> Result<Vec<PasswordPolicy>,Error>{
     }
     Ok(record)
 }
-fn main() {
-    println!("Day two!");
-    let record = read_input().unwrap();
-    println!("Record: {:?}",record);
-    let mut count = 0;
-    for elt in record {
-        let (min,max,key,pass) = elt;
-        if pass.contains(key){
-            let mut loc_count = 0;
-            for ch in pass.chars(){
-                if key == ch {
-                    loc_count +=1
-                }
+
+fn old_policy(rec:&PasswordPolicy)->usize{
+    let (min,max,key,pass) = rec;
+    if pass.contains(*key){
+        let mut loc_count = 0;
+        for ch in pass.chars(){
+            if *key == ch {
+                loc_count +=1
             }
-            if loc_count >= min && loc_count <= max{
-                println!("min: {}",min);
-                println!("max: {}",max);
-                println!("key: {}",key);
-                println!("pass: {}",pass);
-                count += 1;
+        }
+        if loc_count >= *min && loc_count <= *max{
+            1
+        }
+        else{
+            0
+        }
+    }
+    else{
+        0
+    }
+}
+
+fn new_policy(rec:&PasswordPolicy)->usize{
+    let (pos1,pos2,key,pass) = rec;
+    let mut loc_count = 0;
+    if pass.contains(*key){
+        for (i,ch) in pass.chars().enumerate(){
+            if *key == ch {
+                if (i+1) == *pos1{
+                    loc_count += 1;
+                }
+                else if (i+1) == *pos2{
+                    loc_count +=1;
+                }
             }
         }
     }
-    println!("Total number of valid passwords: {}",count);
+    if loc_count == 1 {
+        1
+    }
+    else{
+        0
+    }
+}
+fn main() {
+    println!("Day two!");
+    let record = read_input().unwrap();
+    let mut count_old = 0;
+    let mut count_new = 0;
+    for policy in record{
+        count_old += old_policy(&policy);
+        count_new += new_policy(&policy);
+    }
+    println!("Total number of valid passwords according to old policy: {}",count_old);
+    println!("Total number of valid passwords according to new policy: {}",count_new);
 }
