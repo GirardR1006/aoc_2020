@@ -8,7 +8,7 @@ struct ForestMap {
 }
 
 fn read_input() -> Result<ForestMap,Error>{
-    let f = File::open("input_day_three")?;
+    let f = File::open("input_day_three_test")?;
     let mut topo = Vec::new();
     let file = BufReader::new(f);
     for line in file.lines(){
