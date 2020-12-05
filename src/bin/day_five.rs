@@ -22,42 +22,26 @@ Result<Vec<String>,Error>{
 }
 //find which row corresponds
 //to the code
-fn bin_div_row(row_seq: &str) -> usize{
-    let mut lb = 0;
-    let mut ub = 127;
-    println!("Row_seq: {}", row_seq);
+fn bin_div(row_seq: &str,lb: usize,ub:usize)
+    -> usize{
+    let mut lb = lb;
+    let mut ub = ub;
     for code in row_seq.chars(){
         match code {
-            'F' => ub = lb + (ub-lb)/2,
-            'B' => lb = lb + (ub+1-lb)/2,
+            'F'|'L' => ub = lb + (ub-lb)/2,
+            'B'|'R' => lb = lb + (ub+1-lb)/2,
             _ => println!("POUET")
         };
     }
-    println!("ub: {}, lb: {}", ub, lb);
     ub
 }
-fn bin_div_col(col_seq: &str) -> usize{
-    let mut lb = 0;
-    let mut ub = 7;
-    println!("col_seq: {}", col_seq);
-    for code in col_seq.chars(){
-        match code {
-            'L' => ub = lb + (ub-lb)/2,
-            'R' => lb = lb + (ub+1-lb)/2,
-            _ => println!("POUET")
-        };
-    }
-    println!("ub: {}; lb: {}",ub, lb);
-    ub
-}
-
 fn main() {
     println!("Day five!");
     let records = read_input().unwrap();
     let mut max_id = 0;
     for code in records.iter(){
-        let row_id = bin_div_row(&code[..7]);
-        let col_id = bin_div_col(&code[7..10]);
+        let row_id = bin_div(&code[..7],0,127);
+        let col_id = bin_div(&code[7..10],0,7);
         max_id = max(row_id*8 + col_id,max_id)
     }
     println!("Maximum id in record: {}",max_id);
