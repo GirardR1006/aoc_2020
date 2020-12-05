@@ -5,33 +5,29 @@ use regex::Regex;
 
 fn check_nums(n:&String,lb:usize,ub:usize) -> bool{
     let v = (*n).parse::<usize>().unwrap();
-    v < ub && v > lb
+    v <= ub && v >= lb
 }
-fn check_height(n:&String) -> bool{
-    if n.len() == 4{
-        let str_n = n.as_str();
-        str_n.chars().nth(3).unwrap() == 'n' &&
-            str_n.chars().nth(2).unwrap() == 'i' &&
-            str_n[..2].parse::<usize>().unwrap() > 59 &&
-            str_n[..2].parse::<usize>().unwrap() < 76
+fn check_hgt(value: &String) -> bool {
+    let re = Regex::new(r"cm|in$").unwrap();
+    let unit = match re.captures(&value) {
+        Some(txt) => txt,
+        None => {return false;},
+    };
+    let unit = &unit[0];
+    let re = Regex::new(r"^\d+").unwrap();
+    let value = re.captures(&value).unwrap();
+    let value:i32 = value[0].parse().unwrap();
+    if unit == "cm" {
+        value >= 150 && value <= 193
     }
-    else if n.len() == 5{
-        let str_n = n.as_str();
-        str_n.chars().nth(4).unwrap() == 'm' &&
-            str_n.chars().nth(3).unwrap() == 'c' &&
-            str_n[..3].parse::<usize>().unwrap() > 150 &&
-            str_n[..3].parse::<usize>().unwrap() < 193
+    else {
+        value >= 59 && value <= 76
     }
-    else {false}
 }
-
 fn check_hcl(n:&String) -> bool{
-    if (*n).len() == 7{
-        let re = Regex::new(r"[0-9]+[a-f]$").unwrap();
-        n.chars().nth(0).unwrap() == '#' &&
-            re.is_match(&(n.as_str()[1..]))
-    }
-    else{false}
+    let re = Regex::new(r"^#[0-9a-f]{6}$")
+        .unwrap();
+    re.is_match(&n)
 }
 
 fn check_ecl(n:&String) -> bool{
@@ -50,30 +46,38 @@ fn check_passport(passfields:&HashMap<String,String>)
             Some(v) => check_nums(v, 1920, 2002),
             None => false
         };
+        println!("ch_byr: {}",ch_byr);
         let ch_iyr = match passfields.get("iyr"){
             Some(v) => check_nums(v, 2010, 2020),
             None => false
         };
+        println!("ch_iyr: {}",ch_iyr);
         let ch_eyr = match passfields.get("eyr"){
             Some(v) => check_nums(v, 2020, 2030),
             None => false
         };
+        println!("ch_eyr: {}",ch_eyr);
         let ch_hgt = match passfields.get("hgt"){
-            Some(v) => check_height(v),
+            Some(v) => check_hgt(v),
             None => false
         };
+        println!("ch_hgt: {}",ch_hgt);
         let ch_hcl = match passfields.get("hcl"){
             Some(v) => check_hcl(v),
             None => false
         };
+        println!("ch_hcl: {}",ch_hcl);
         let ch_ecl = match passfields.get("ecl"){
             Some(v) => check_ecl(v),
             None => false
         };
+        println!("ch_ecl: {}",ch_ecl);
         let ch_pid = match passfields.get("pid"){
             Some(v) => check_pid(v),
             None => false
         };
+        println!("ch_pid: {}",ch_pid);
+        println!("###########");
 
         ch_hcl && ch_hgt && ch_eyr &&  ch_iyr && ch_byr &&
             ch_ecl && ch_pid
@@ -94,12 +98,11 @@ Result<Vec<HashMap<String,String>>,Error>{
             let pass_str = &potential_passport;
             let sliced = pass_str.split_ascii_whitespace();
             for kv in sliced{
-                let k = String::from(kv
-                                     .split(':')
+                let mut c_kv = kv.split(':');
+                let k = String::from(c_kv
                                      .next()
                                      .unwrap());
-                let v = String::from(kv
-                                     .split(':')
+                let v = String::from(c_kv
                                      .next()
                                      .unwrap());
                 &mut record.insert(k, v);

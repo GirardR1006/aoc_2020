@@ -1,6 +1,7 @@
 use std::io::{BufRead,BufReader,Error};
 use std::fs::File;
 
+
 type PasswordPolicy = (usize,usize,char,String);
 
 fn read_input() -> Result<Vec<PasswordPolicy>,Error>{
