@@ -35,14 +35,26 @@ fn bin_div(row_seq: &str,lb: usize,ub:usize)
     }
     ub
 }
+
 fn main() {
     println!("Day five!");
     let records = read_input().unwrap();
     let mut max_id = 0;
+    let mut ids = Vec::new();
     for code in records.iter(){
         let row_id = bin_div(&code[..7],0,127);
         let col_id = bin_div(&code[7..10],0,7);
-        max_id = max(row_id*8 + col_id,max_id)
+        let id = row_id*8 + col_id;
+        ids.push(id);
+        max_id = max(id,max_id);
     }
-    println!("Maximum id in record: {}",max_id);
+    ids.sort();
+    let first_id = ids[0];
+    let my_id = ids
+        .iter()
+        .fold(first_id, |acc, x|
+              {match x - 1 == acc
+                  {true => acc + 1,
+                      false => acc}});
+    println!("My id: {}",my_id+1);
 }
