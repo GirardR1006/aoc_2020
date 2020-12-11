@@ -1,5 +1,3 @@
-#![feature(map_into_keys_values)]
-
 use std::io::{BufRead,BufReader,Error};
 use std::fs::File;
 use std::collections::HashMap;
