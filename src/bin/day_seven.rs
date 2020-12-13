@@ -18,7 +18,7 @@ type Neighbours = Vec<(Id,Weight)>;
 #[derive(Debug)]
 struct Node{
     id: Id,
-    preds : Neighbours, 
+    preds : Neighbours,
     succs : Neighbours
 }
 impl Node{
@@ -63,10 +63,23 @@ impl Graph {
         -> Option<&usize>{
             self.colours.get(&colour)
         }
-    fn find_node_by_id (self: &mut Graph,id : usize)
+    fn find_node_by_id (self: &mut Graph,id : &usize)
         -> Option<&mut Node>{
             self.nodes.iter_mut()
-                .filter(|n| n.id == id)
+                .filter(|n| n.id == *id)
+                .next()
+        }
+    fn find_node_by_id_immut (self: &Graph,id : &usize)
+        -> Option<&Node>{
+            self.nodes.iter()
+                .filter(|n| n.id == *id)
+                .next()
+        }
+    fn find_node_by_colour (self: &Graph,colour : String)
+        -> Option<&Node>{
+            let id = self.colours.get(&colour).unwrap();
+            self.nodes.iter()
+                .filter(|n| n.id == *id)
                 .next()
         }
     //add edge to a graph, require all nodes to be already here
@@ -75,17 +88,26 @@ impl Graph {
              w: usize){
         match (self.mem(id),self.mem(pred_id)){
             (true,true) => {
-                self.find_node_by_id(id)
+                self.find_node_by_id(&id)
                     .unwrap()
                     .preds
                     .push((pred_id,w));
-                self.find_node_by_id(pred_id)
+                self.find_node_by_id(&pred_id)
                     .unwrap()
                     .succs
                     .push((id,w));
             },
             (_,_) => ()
         }
+    }
+    fn get_preds(self: &Graph, node: &Node)
+    -> Vec<&Node>{
+        let ids : Vec<usize> = node.preds.iter().map(|x| x.0).collect();
+        let preds = ids
+            .iter()
+            .map(|id| self.find_node_by_id_immut(id).unwrap())
+            .collect();
+        preds
     }
 }
 
@@ -94,9 +116,6 @@ impl Graph {
 //create node for leftside part of this sequence
 //for right side, check whether there is "no other"
 //in the sequence; if not, build succs
-fn is_alphabetic(c: char) -> bool{
-    c.is_alphabetic()
-}
 fn no_space(s: &str)
     -> IResult<&str,&str>{
         take_while1(|c| c !=' ')(s)
@@ -138,7 +157,7 @@ fn contain_seq(input: &str)
     }
 
 fn parse() -> Result<Graph,Error>{
-    let f = File::open("input_day_seven")?;
+    let f = File::open("input_day_seven_test")?;
     let file = BufReader::new(f);
     let mut g = Graph::new();
     for line in file.lines(){
@@ -162,9 +181,27 @@ fn parse() -> Result<Graph,Error>{
     Ok(g)
 }
 
+//parse the golden colour, and count all
+//predecessors and their predecessors
+fn aux(graph: &Graph, n: &Node) -> usize{
+    match graph.get_preds(n).len(){
+        0 => 1,
+        _  => graph
+            .get_preds(n)
+            .iter()
+            .fold(0,|acc,x| acc + aux(graph, x))
+    }
+}
+fn count_bags(graph: &mut Graph) -> usize{
+    let n = graph
+        .find_node_by_colour(String::from("shinygold"))
+        .unwrap();
+    aux(graph, n)
+}
+
 
 fn main(){
     println!("Day seven!");
-    let g = parse().unwrap();
-    println!("{:?}",g);
+    let mut g = parse().unwrap();
+    println!("Number of preds {}",count_bags(&mut g));
 }
