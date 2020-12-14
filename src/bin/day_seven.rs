@@ -1,8 +1,12 @@
 extern crate nom;
+extern crate dot;
 
 use std::io::{BufRead,BufReader,Error};
 use std::fs::File;
+use std::io::Write;
 use std::collections::HashMap;
+use std::borrow::Cow;
+use std::convert::From;
 use nom::IResult;
 use nom::bytes::complete::{take_while1, tag};
 use nom::combinator::map;
@@ -15,7 +19,7 @@ type Neighbours = Vec<(Id,Weight)>;
 
 // a simple graph structure based
 // on adjacency lists
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 struct Node{
     id: Id,
     preds : Neighbours,
@@ -26,6 +30,9 @@ impl Node{
            preds: Neighbours,
            succs: Neighbours) -> Node{
         Node{id, preds, succs}
+    }
+    fn from(id:usize) -> Self{
+        Node{id,preds:Vec::new(),succs:Vec::new()}
     }
 }
 #[derive(Debug)]
@@ -110,7 +117,36 @@ impl Graph {
         preds
     }
 }
+//dot rendering
+//pub fn render_to<W: Write>(graph: &Graph, output: &mut W) {
+//    dot::render(&graph, output).unwrap()
+//}
 
+//impl<'a> dot::Labeller<'a, Node, Neighbours> for Graph {
+//    fn graph_id(&'a self) -> dot::Id<'a> { dot::Id::new("graph").unwrap() }
+//    fn node_id(&'a self, n: &Node) -> dot::Id<'a> {
+//        dot::Id::new(format!("N{:?}", n)).unwrap()
+//    }
+//    fn node_label<'b>(&'b self, n: &Node) -> dot::LabelText<'b> {
+//        dot::LabelText::LabelStr(n.id.to_string().into())
+//    }
+//    fn edge_label<'b>(&'b self, _: &Neighbours) -> dot::LabelText<'b> {
+//        dot::LabelText::LabelStr("&sube;".into())
+//    }
+//}
+
+////TODO
+//impl<'a> dot::GraphWalk<'a, Node, Neighbours> for Graph {
+//    fn nodes(&self) -> dot::Nodes<'a,Node> {
+//        self.nodes
+//    }
+//    fn edges(&'a self) -> dot::Edges<'a,Neighbours>{
+//    }
+//    fn source(&self, n: &Neighbours) -> Node {
+//    }
+//    fn target(&self, n: &Neighbours) -> Node {
+//    }
+//}
 //basic steps:
 //split on the string "contains"
 //create node for leftside part of this sequence
@@ -199,9 +235,10 @@ fn count_bags(graph: &mut Graph) -> usize{
     aux(graph, n)
 }
 
-
 fn main(){
     println!("Day seven!");
     let mut g = parse().unwrap();
+    println!("{:?}", g);
     println!("Number of preds {}",count_bags(&mut g));
+    let mut f = File::create("graph.dot").unwrap();
 }
